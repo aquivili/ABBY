@@ -8,6 +8,7 @@
   "dependencies": {
     "@napi-rs/canvas": "^0.1.96",
     "canvas": "^3.2.1",
-    "discord.js": "^14.25.1"
+    "discord.js": "^14.25.1",
+    "jimp": "^1.6.0"
   }
 }
