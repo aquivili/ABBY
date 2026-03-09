@@ -1,5 +1,7 @@
 const { Client, GatewayIntentBits, EmbedBuilder } = require("discord.js");
 const fs = require("fs");
+const { createCanvas, loadImage } = require('canvas');
+const path = require('path');
 
 const client = new Client({
   intents: [
@@ -21,6 +23,42 @@ for (const file of commandFiles) {
 client.on("ready", () => {
   console.log("Bot is online");
 });
+
+// Helper function to generate booster image
+async function generateBoosterImage(user) {
+  const templatePath = path.join(__dirname, 'boost.png');
+  const canvas = createCanvas(400, 200); // Adjust size according to your template
+  const ctx = canvas.getContext('2d');
+
+  // Load and draw the template
+  const template = await loadImage(templatePath);
+  ctx.drawImage(template, 0, 0, canvas.width, canvas.height);
+
+  // Load user's avatar
+  const avatarUrl = user.displayAvatarURL({ extension: 'png', size: 128 });
+  const avatar = await loadImage(avatarUrl);
+
+  // Draw avatar as a circle
+  const avatarX = 20;
+  const avatarY = 20;
+  const avatarSize = 128;
+
+  ctx.save();
+  ctx.beginPath();
+  ctx.arc(avatarX + avatarSize / 2, avatarY + avatarSize / 2, avatarSize / 2, 0, Math.PI * 2, true);
+  ctx.closePath();
+  ctx.clip();
+  ctx.drawImage(avatar, avatarX, avatarY, avatarSize, avatarSize);
+  ctx.restore();
+
+  // Draw username text
+  ctx.font = '28px Sans-serif';
+  ctx.fillStyle = '#FFFFFF'; // White color, change if needed
+  ctx.fillText(user.username, avatarX + avatarSize + 20, avatarY + avatarSize / 2 + 10);
+
+  // Return image buffer to send as file
+  return canvas.toBuffer();
+}
 
 client.on("messageCreate", async message => {
   if (message.author.bot) return;
@@ -68,6 +106,19 @@ client.on("messageCreate", async message => {
 
   if (message.content.toLowerCase().includes("i miss you")) {
     return message.reply("i miss you too");
+  }
+
+  // New command: booster image generation
+  if (commandName === "booster") {
+    try {
+      const imgBuffer = await generateBoosterImage(message.author);
+      await message.channel.send({
+        files: [{ attachment: imgBuffer, name: "booster.png" }]
+      });
+    } catch (err) {
+      console.error("Error generating booster image:", err);
+      message.reply("Sorry, I failed to create your booster image.");
+    }
   }
 });
 
