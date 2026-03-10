@@ -80,6 +80,58 @@ client.on("messageCreate", async message => {
   if (message.content.toLowerCase().includes("i miss you")) {
     message.reply("i miss you too");
   }
+
+  // VOUCH SYSTEM
+const vouchChannel = "1473361996689707204";
+
+if (message.channel.id === vouchChannel && !message.author.bot) {
+    const lower = message.content.toLowerCase();
+
+    if (lower.startsWith("a!vouch")) {
+        const user = message.author;
+
+        // Remove the command part
+        const raw = message.content.slice("a!vouch".length).trim();
+
+        // Split into item + feedback
+        const parts = raw.split(" ");
+        const item = parts.shift() || "Unknown item";
+        const feedback = parts.join(" ") || "No feedback provided.";
+
+        const attachment = message.attachments.first();
+
+        if (!raw && !attachment) {
+            return message.reply("Please include your item + feedback or an attachment.");
+        }
+
+        await message.delete().catch(() => {});
+
+        const embed = new EmbedBuilder()
+            .setColor("#A3E4D7")
+            .setDescription(
+`**<@${user.id}> claimed *${item}* successfully!**
+
+**Feedback:** Thank you <@Shorekeeper> for the *${feedback}*.
+
+┈┈┈┈┈┈┈
+**Item:** ${item}
+**Handled by:** <@Shorekeeper>
+**Date:** <t:${Math.floor(Date.now() / 1000)}:F>
+┈┈┈┈┈┈┈
+
+-# Thank you for trusting our shop! ♡`
+            );
+
+        if (attachment) {
+            embed.setImage(attachment.url);
+        }
+
+        const channel = message.guild.channels.cache.get(vouchChannel);
+        if (channel) {
+            channel.send({ embeds: [embed] });
+        }
+    }
+}
 });
 
 client.login(process.env.DISCORD_TOKEN);
