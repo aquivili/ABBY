@@ -15,7 +15,6 @@ client.on("ready", () => {
 client.on("messageCreate", async message => {
   if (message.author.bot) return;
 
-  // AUTO-THREAD FOR THREE CHANNELS
   const autoThreadChannels = [
     "1475756752136966204",
     "1453055255557439601",
@@ -34,52 +33,6 @@ client.on("messageCreate", async message => {
       console.error("Thread creation failed:", err);
     }
   }
-  // END AUTO-THREAD SECTION
-
-
-
-  // VOUCH SYSTEM (capture text + first attachment as embed image)
-  const vouchChannel = "1473361996689707204";
-
-  if (message.channel.id === vouchChannel && !message.author.bot) {
-    const lower = message.content.toLowerCase();
-
-    if (lower.startsWith("a!vouch")) {
-      const user = message.author;
-
-      const fullMessage = message.content.slice("a!vouch".length).trim();
-
-      const attachments = [...message.attachments.values()];
-      const firstAttachment = attachments[0];
-
-      if (!fullMessage && !firstAttachment) {
-        return message.reply("Please include a message or an attachment.");
-      }
-
-      await message.delete().catch(() => {});
-
-      const embed = new EmbedBuilder()
-        .setColor("#A3E4D7")
-        .setAuthor({ name: `${user.username} submitted a vouch`, iconURL: user.displayAvatarURL() })
-        .setDescription(fullMessage || "*No text provided.*")
-        .setFooter({ text: "Thank you for trusting our shop! ♡" })
-        .setTimestamp();
-
-      if (firstAttachment) {
-        embed.setImage(firstAttachment.url);
-      }
-
-      const channel = message.guild.channels.cache.get(vouchChannel);
-      if (channel) {
-        channel.send({ embeds: [embed] });
-      }
-
-      return;
-    }
-  }
-  // END VOUCH SYSTEM
-
-
 
   if (message.content === "ping") {
     message.reply("pong");
@@ -126,5 +79,6 @@ client.on("messageCreate", async message => {
     message.reply("i miss you too");
   }
 });
+
 
 client.login(process.env.DISCORD_TOKEN);
