@@ -80,46 +80,6 @@ client.on("messageCreate", async message => {
   if (message.content.toLowerCase().includes("i miss you")) {
     message.reply("i miss you too");
   }
-
- // VOUCH SYSTEM (capture everything)
-const vouchChannel = "1473361996689707204";
-
-if (message.channel.id === vouchChannel && !message.author.bot) {
-    const lower = message.content.toLowerCase();
-
-    if (lower.startsWith("a!vouch")) {
-        const user = message.author;
-
-        // Capture everything AFTER the command
-        const fullMessage = message.content.slice("a!vouch".length).trim();
-
-        // Capture attachment (first one)
-        const attachment = message.attachments.first();
-
-        if (!fullMessage && !attachment) {
-            return message.reply("Please include a message or an attachment.");
-        }
-
-        await message.delete().catch(() => {});
-
-        const embed = new EmbedBuilder()
-            .setColor("#A3E4D7")
-            .setAuthor({ name: `${user.username} submitted a vouch`, iconURL: user.displayAvatarURL() })
-            .setDescription(fullMessage || "*No text provided.*")
-            .setFooter({ text: "Thank you for trusting our shop! ♡" })
-            .setTimestamp();
-
-        if (attachment) {
-            embed.setImage(attachment.url);
-        }
-
-        const channel = message.guild.channels.cache.get(vouchChannel);
-        if (channel) {
-            channel.send({ embeds: [embed] });
-        }
-    }
-}
-}
 });
 
 client.login(process.env.DISCORD_TOKEN);
