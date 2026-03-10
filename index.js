@@ -81,7 +81,7 @@ client.on("messageCreate", async message => {
     message.reply("i miss you too");
   }
 
-  // VOUCH SYSTEM
+ // VOUCH SYSTEM (capture everything)
 const vouchChannel = "1473361996689707204";
 
 if (message.channel.id === vouchChannel && !message.author.bot) {
@@ -90,37 +90,24 @@ if (message.channel.id === vouchChannel && !message.author.bot) {
     if (lower.startsWith("a!vouch")) {
         const user = message.author;
 
-        // Remove the command part
-        const raw = message.content.slice("a!vouch".length).trim();
+        // Capture everything AFTER the command
+        const fullMessage = message.content.slice("a!vouch".length).trim();
 
-        // Split into item + feedback
-        const parts = raw.split(" ");
-        const item = parts.shift() || "Unknown item";
-        const feedback = parts.join(" ") || "No feedback provided.";
-
+        // Capture attachment (first one)
         const attachment = message.attachments.first();
 
-        if (!raw && !attachment) {
-            return message.reply("Please include your item + feedback or an attachment.");
+        if (!fullMessage && !attachment) {
+            return message.reply("Please include a message or an attachment.");
         }
 
         await message.delete().catch(() => {});
 
         const embed = new EmbedBuilder()
             .setColor("#A3E4D7")
-            .setDescription(
-`**<@${user.id}> claimed *${item}* successfully!**
-
-**Feedback:** Thank you <@Shorekeeper> for the *${feedback}*.
-
-┈┈┈┈┈┈┈
-**Item:** ${item}
-**Handled by:** <@Shorekeeper>
-**Date:** <t:${Math.floor(Date.now() / 1000)}:F>
-┈┈┈┈┈┈┈
-
--# Thank you for trusting our shop! ♡`
-            );
+            .setAuthor({ name: `${user.username} submitted a vouch`, iconURL: user.displayAvatarURL() })
+            .setDescription(fullMessage || "*No text provided.*")
+            .setFooter({ text: "Thank you for trusting our shop! ♡" })
+            .setTimestamp();
 
         if (attachment) {
             embed.setImage(attachment.url);
@@ -131,6 +118,7 @@ if (message.channel.id === vouchChannel && !message.author.bot) {
             channel.send({ embeds: [embed] });
         }
     }
+}
 }
 });
 
