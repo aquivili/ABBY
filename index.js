@@ -1,13 +1,4 @@
-const {
-  Client,
-  GatewayIntentBits,
-  EmbedBuilder
-} = require("discord.js");
-
-const {
-  registerVouchCommands,
-  handleVouchInteraction
-} = require("./vouch/vouchCommands");
+const { Client, GatewayIntentBits, EmbedBuilder } = require("discord.js");
 
 const client = new Client({
   intents: [
@@ -17,9 +8,8 @@ const client = new Client({
   ]
 });
 
-client.on("ready", async () => {
+client.on("ready", () => {
   console.log("Bot is online");
-  await registerVouchCommands();
 });
 
 client.on("messageCreate", async message => {
@@ -90,8 +80,5 @@ client.on("messageCreate", async message => {
   }
 });
 
-client.on("interactionCreate", async interaction => {
-  await handleVouchInteraction(interaction);
-});
 
 client.login(process.env.DISCORD_TOKEN);
