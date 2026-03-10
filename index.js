@@ -36,50 +36,6 @@ client.on("messageCreate", async message => {
   }
   // END AUTO-THREAD SECTION
 
-
-
-  // VOUCH COMMAND SYSTEM
-  const vouchChannel = "1473361996689707204"; // same channel for input + output
-
-  if (message.channel.id === vouchChannel && !message.author.bot) {
-    const lower = message.content.toLowerCase();
-
-    if (lower.startsWith("a!vouch")) {
-      const user = message.author;
-      const feedback = message.content.slice("a!vouch".length).trim();
-      const attachment = message.attachments.first();
-
-      if (!feedback && !attachment) {
-        return message.reply("Please include your vouch message or an attachment.");
-      }
-
-      await message.delete().catch(() => {});
-
-      const embed = new EmbedBuilder()
-        .setColor("#A3E4D7")
-        .setAuthor({ name: `${user.username} submitted a vouch`, iconURL: user.displayAvatarURL() })
-        .addFields(
-          { name: "Feedback", value: feedback || "No text provided." },
-          { name: "Date", value: `<t:${Math.floor(Date.now() / 1000)}:F>` }
-        )
-        .setFooter({ text: "Thank you for trusting our shop! ♡" });
-
-      if (attachment) {
-        embed.setImage(attachment.url);
-      }
-
-      const channel = message.guild.channels.cache.get(vouchChannel);
-      if (channel) {
-        channel.send({ embeds: [embed] });
-      }
-      return; // stop further command checks
-    }
-  }
-  // END VOUCH SYSTEM
-
-
-
-  // BASIC COMMANDS
   if (message.content === "ping") {
     message.reply("pong");
   }
@@ -103,9 +59,6 @@ client.on("messageCreate", async message => {
     message.channel.send({ embeds: [embed] });
   }
 
-
-
-  // LOVE RESPONSES
   if (
     message.content.toLowerCase().includes("i love you") ||
     message.content.toLowerCase().includes("love you") ||
