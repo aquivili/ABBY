@@ -56,4 +56,4 @@ function getVouchesForUser(userId) {
 module.exports = {
   addVouch,
   getVouchesForUser
-};
+}; 

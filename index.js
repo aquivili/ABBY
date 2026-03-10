@@ -3,6 +3,7 @@ const {
   GatewayIntentBits,
   EmbedBuilder
 } = require("discord.js");
+
 const {
   registerVouchCommands,
   handleVouchInteraction
@@ -88,6 +89,7 @@ client.on("messageCreate", async message => {
     message.reply("i miss you too");
   }
 });
+
 client.on("interactionCreate", async interaction => {
   await handleVouchInteraction(interaction);
 });
