@@ -12,8 +12,29 @@ client.on("ready", () => {
   console.log("Bot is online");
 });
 
-client.on("messageCreate", message => {
+client.on("messageCreate", async message => {
   if (message.author.bot) return;
+
+  // AUTO-THREAD FOR THREE CHANNELS
+  const autoThreadChannels = [
+    "1475756752136966204",
+    "1453055255557439601",
+    "1453053634282651830"
+  ];
+
+  if (autoThreadChannels.includes(message.channel.id)) {
+    try {
+      const thread = await message.startThread({
+        name: `${message.author.username}-thread`,
+        autoArchiveDuration: 60
+      });
+
+      await thread.send(`Thread created for ${message.author.username}.`);
+    } catch (err) {
+      console.error("Thread creation failed:", err);
+    }
+  }
+  // END AUTO-THREAD SECTION
 
   if (message.content === "ping") {
     message.reply("pong");
