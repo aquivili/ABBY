@@ -1,4 +1,5 @@
 const { Client, GatewayIntentBits, EmbedBuilder } = require("discord.js");
+const { addVouch, getVouches } = require("./vouchManager");
 
 const client = new Client({
   intents: [
@@ -32,6 +33,61 @@ client.on("messageCreate", async message => {
     } catch (err) {
       console.error("Thread creation failed:", err);
     }
+  }
+
+  // add vouch
+  if (message.content.startsWith("a!vouch")) {
+    const args = message.content.replace("a!vouch", "").trim().split(/ +/);
+
+    const target =
+      message.mentions.users.first() ||
+      (args[0] ? await client.users.fetch(args[0]).catch(() => null) : null);
+
+    if (!target) {
+      return message.reply("tag a user or give a valid ID");
+    }
+
+    const reason = args.slice(1).join(" ");
+    if (!reason) {
+      return message.reply("give a reason for the vouch");
+    }
+
+    const list = addVouch(target.id, message.author.id, reason);
+
+    return message.reply(
+      `vouch added for ${target.tag}. they now have ${list.length} vouches`
+    );
+  }
+
+  // view vouches
+  if (message.content.startsWith("a!vouches")) {
+    const args = message.content.replace("a!vouches", "").trim().split(/ +/);
+
+    const target =
+      message.mentions.users.first() ||
+      (args[0] ? await client.users.fetch(args[0]).catch(() => null) : message.author);
+
+    if (!target) {
+      return message.reply("tag a user or give a valid ID");
+    }
+
+    const list = getVouches(target.id);
+
+    if (!list.length) {
+      return message.reply(`${target.tag} has no vouches yet`);
+    }
+
+    const lines = list
+      .slice(-10)
+      .map((v, i) => {
+        const date = new Date(v.timestamp).toLocaleString();
+        return `${i + 1}. by <@${v.authorId}> on ${date}: ${v.reason}`;
+      })
+      .join("\n");
+
+    return message.reply(
+      `vouches for ${target.tag} (latest ${Math.min(10, list.length)}):\n${lines}`
+    );
   }
 
   if (message.content === "ping") {
@@ -79,6 +135,5 @@ client.on("messageCreate", async message => {
     message.reply("i miss you too");
   }
 });
-
 
 client.login(process.env.DISCORD_TOKEN);
