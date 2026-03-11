@@ -36,28 +36,28 @@ client.on("messageCreate", async message => {
   }
 
   // add vouch
-  if (message.content.startsWith("a!vouch")) {
-    const args = message.content.replace("a!vouch", "").trim().split(/ +/);
+  if (message.content.toLowerCase().startsWith("a!vouch")) {
+  const content = message.content.replace(/a!vouch/i, "").trim();
+  const attachment = message.attachments.first();
 
-    const target =
-      message.mentions.users.first() ||
-      (args[0] ? await client.users.fetch(args[0]).catch(() => null) : null);
-
-    if (!target) {
-      return message.reply("tag a user or give a valid ID");
-    }
-
-    const reason = args.slice(1).join(" ");
-    if (!reason) {
-      return message.reply("give a reason for the vouch");
-    }
-
-    const list = addVouch(target.id, message.author.id, reason);
-
-    return message.reply(
-      `vouch added for ${target.tag}. they now have ${list.length} vouches`
-    );
+  if (!attachment) {
+    return message.reply("you must attach a proof image or file with your vouch");
   }
+
+  await message.delete().catch(() => {});
+
+  const embed = new EmbedBuilder()
+    .setColor("#A3E4D7")
+    .setAuthor({
+      name: `${message.author.username} submitted a vouch`,
+      iconURL: message.author.displayAvatarURL()
+    })
+    .setDescription(content || "*No text provided.*")
+    .setImage(attachment.url)
+    .setTimestamp();
+
+  message.channel.send({ embeds: [embed] });
+}
 
   // view vouches
   if (message.content.toLowerCase().startsWith("a!vouch")) {
