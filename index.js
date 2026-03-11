@@ -1,5 +1,12 @@
-const { Client, GatewayIntentBits, EmbedBuilder } = require("discord.js");
-const { addVouch, getVouches } = require("./vouchManager");
+const { 
+  Client, 
+  GatewayIntentBits, 
+  EmbedBuilder, 
+  Collection, 
+  REST, 
+  Routes 
+} = require("discord.js");
+const fs = require("fs");
 
 const client = new Client({
   intents: [
@@ -9,10 +16,38 @@ const client = new Client({
   ]
 });
 
-client.on("ready", () => {
+// load slash commands
+client.commands = new Collection();
+const commandFiles = fs.readdirSync("./commands").filter(f => f.endsWith(".js"));
+for (const file of commandFiles) {
+  const command = require(`./commands/${file}`);
+  client.commands.set(command.data.name, command);
+}
+
+client.on("ready", async () => {
   console.log("Bot is online");
+
+  const rest = new REST({ version: "10" }).setToken(process.env.DISCORD_TOKEN);
+
+  await rest.put(
+    Routes.applicationCommands(client.user.id),
+    { body: client.commands.map(cmd => cmd.data.toJSON()) }
+  );
+
+  console.log("Slash commands registered");
 });
 
+// handle slash commands
+client.on("interactionCreate", async interaction => {
+  if (!interaction.isChatInputCommand()) return;
+
+  const command = client.commands.get(interaction.commandName);
+  if (!command) return;
+
+  await command.execute(interaction);
+});
+
+// your original messageCreate stays exactly the same
 client.on("messageCreate", async message => {
   if (message.author.bot) return;
 
@@ -34,54 +69,6 @@ client.on("messageCreate", async message => {
       console.error("Thread creation failed:", err);
     }
   }
-
-  // add vouch
-  if (message.content.toLowerCase().startsWith("a!vouch")) {
-  const content = message.content.replace(/a!vouch/i, "").trim();
-  const attachment = message.attachments.first();
-
-  if (!attachment) {
-    return message.reply("you must attach a proof image or file with your vouch");
-  }
-
-  await message.delete().catch(() => {});
-
-  const embed = new EmbedBuilder()
-    .setColor("#A3E4D7")
-    .setAuthor({
-      name: `${message.author.username} submitted a vouch`,
-      iconURL: message.author.displayAvatarURL()
-    })
-    .setDescription(content || "*No text provided.*")
-    .setImage(attachment.url)
-    .setTimestamp();
-
-  message.channel.send({ embeds: [embed] });
-}
-
-  // view vouches
-  if (message.content.toLowerCase().startsWith("a!vouch")) {
-  const content = message.content.replace(/a!vouch/i, "").trim();
-  const attachment = message.attachments.first();
-
-  if (!attachment) {
-    return message.reply("you must attach a proof image or file with your vouch");
-  }
-
-  await message.delete().catch(() => {});
-
-  const embed = new EmbedBuilder()
-    .setColor("#A3E4D7")
-    .setAuthor({
-      name: `${message.author.username} submitted a vouch`,
-      iconURL: message.author.displayAvatarURL()
-    })
-    .setDescription(content || "*No text provided.*")
-    .setImage(attachment.url)
-    .setTimestamp();
-
-  message.channel.send({ embeds: [embed] });
-}
 
   if (message.content === "ping") {
     message.reply("pong");
