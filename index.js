@@ -60,35 +60,28 @@ client.on("messageCreate", async message => {
   }
 
   // view vouches
-  if (message.content.startsWith("a!vouches")) {
-    const args = message.content.replace("a!vouches", "").trim().split(/ +/);
+  if (message.content.toLowerCase().startsWith("a!vouch")) {
+  const content = message.content.replace(/a!vouch/i, "").trim();
+  const attachment = message.attachments.first();
 
-    const target =
-      message.mentions.users.first() ||
-      (args[0] ? await client.users.fetch(args[0]).catch(() => null) : message.author);
-
-    if (!target) {
-      return message.reply("tag a user or give a valid ID");
-    }
-
-    const list = getVouches(target.id);
-
-    if (!list.length) {
-      return message.reply(`${target.tag} has no vouches yet`);
-    }
-
-    const lines = list
-      .slice(-10)
-      .map((v, i) => {
-        const date = new Date(v.timestamp).toLocaleString();
-        return `${i + 1}. by <@${v.authorId}> on ${date}: ${v.reason}`;
-      })
-      .join("\n");
-
-    return message.reply(
-      `vouches for ${target.tag} (latest ${Math.min(10, list.length)}):\n${lines}`
-    );
+  if (!attachment) {
+    return message.reply("you must attach a proof image or file with your vouch");
   }
+
+  await message.delete().catch(() => {});
+
+  const embed = new EmbedBuilder()
+    .setColor("#A3E4D7")
+    .setAuthor({
+      name: `${message.author.username} submitted a vouch`,
+      iconURL: message.author.displayAvatarURL()
+    })
+    .setDescription(content || "*No text provided.*")
+    .setImage(attachment.url)
+    .setTimestamp();
+
+  message.channel.send({ embeds: [embed] });
+}
 
   if (message.content === "ping") {
     message.reply("pong");
