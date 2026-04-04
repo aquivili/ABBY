@@ -143,6 +143,9 @@ client.on("messageCreate", async message => {
       "sorry may mahal na akong iba",
       "palibhasa kasi alam mo kung pano ako kunin eh",
       "sorry may asawa na ako may anak na kame",
+      "hawak mo ang beat hawak mo ang beat hawak mo ang beat hawak mo ang beat dubai chewy cookie ano tara ilocos empanada ano tara scramble ng tomboy isang araw nagmamaneho ako sa laguna pipipeeppeep dubidubidapdap maglaro tayo maglarue gagayahin mo ako tentenentenentententen",
+      "ilocos empanada, dubai chewy cookies, dokito burger, i miss my baby",
+      "goodness gracious! ikaw 'yung nag shoplift~ you're the one caught stealing on cctv  oh my god, no way! cannot take this anymore, no way!! my twin brother is a criminal. 'yan ang 'di ko matatanggap at tawagin mo 'kong— criminal? BROTHER!",
       "oh tapos ano tapos magiging friends tayo tapos magkakagusto ka saken tapos magugustuhan din kita tapos hindi tayo aamin sa isa't isa Kahit tinutukso na tayo ng friends natin tapos magiinuman kayo ng friends mo tapos magda drunk chat ka sasabihin mo gusto mo ako at mahal mo na tapos sasabihin ko mahal na rin kita tapos magiging tayo tapos kalaunan magkakatampuhan tayo tapos susuyuin kita then at some point susuyuin mo ko tapos mapapagod ka tapos iiwan mo ko tapos hahabulin kita tapos babalik ka ulit tapos mag aaway ulit tapos pag nabuntis ako aalis ka tapos pag malaki na ang anak natin sasabihin mo pasensya na at hindi ka lang handa sa responsibilidad, wag na lang."
     ];
 
