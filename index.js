@@ -1,10 +1,10 @@
-const { 
-  Client, 
-  GatewayIntentBits, 
-  EmbedBuilder, 
-  Collection, 
-  REST, 
-  Routes 
+const {
+  Client,
+  GatewayIntentBits,
+  EmbedBuilder,
+  Collection,
+  REST,
+  Routes
 } = require("discord.js");
 const fs = require("fs");
 
@@ -19,9 +19,21 @@ const client = new Client({
 // load slash commands
 client.commands = new Collection();
 const commandFiles = fs.readdirSync("./commands").filter(f => f.endsWith(".js"));
+
 for (const file of commandFiles) {
-  const command = require(`./commands/${file}`);
-  client.commands.set(command.data.name, command);
+  const commandFile = require(`./commands/${file}`);
+
+  // support multiple commands in one file
+  if (Array.isArray(commandFile.data)) {
+    for (const cmd of commandFile.data) {
+      client.commands.set(cmd.name, {
+        data: cmd,
+        execute: commandFile.execute
+      });
+    }
+  } else {
+    client.commands.set(commandFile.data.name, commandFile);
+  }
 }
 
 client.on("ready", async () => {
