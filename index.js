@@ -62,7 +62,34 @@ client.on("interactionCreate", async interaction => {
 // your original messageCreate stays exactly the same
 client.on("messageCreate", async message => {
   if (message.author.bot) return;
+    // CATEGORY: STICKY AUTO-REFRESH
+    const stickyFile = './sticky.json';
 
+    function loadSticky() {
+      if (!fs.existsSync(stickyFile)) return {};
+      return JSON.parse(fs.readFileSync(stickyFile, 'utf8'));
+    }
+
+    const stickies = loadSticky();
+    const channelId = message.channel.id;
+
+    if (stickies[channelId]) {
+      try {
+        message.channel.messages.fetch(stickies[channelId].messageId)
+          .then(m => m.delete())
+          .catch(() => {});
+
+        const embed = new EmbedBuilder()
+          .setColor('#ffffff')
+          .setDescription(stickies[channelId].text)
+          .setTimestamp();
+
+        message.channel.send({ embeds: [embed] }).then(newMsg => {
+          stickies[channelId].messageId = newMsg.id;
+          fs.writeFileSync(stickyFile, JSON.stringify(stickies, null, 2));
+        });
+      } catch {}
+    }
   const autoThreadChannels = [
     "1475756752136966204",
     "1453055255557439601",
