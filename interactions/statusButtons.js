@@ -15,21 +15,13 @@ module.exports = {
         }
 
         const statusMap = {
-            status_pending: {
-                label: '**__PENDING__**\n```diff\n- Pending\n```'
-            },
-            status_processing: {
-                label: '**__UNDER PROCESSING__**\n```yaml\n# Under Processing\n```'
-            },
-            status_completed: {
-                label: '**__COMPLETED__**\n```diff\n+ Completed\n```'
-            },
-            status_voided: {
-                label: '**__VOIDED__**\n```diff\n- Voided\n```'
-            }
+            status_pending: '**__PENDING__**\n```diff\n- Pending\n```',
+            status_processing: '**__UNDER PROCESSING__**\n```yaml\n# Under Processing\n```',
+            status_completed: '**__COMPLETED__**\n```diff\n+ Completed\n```',
+            status_voided: '**__VOIDED__**\n```diff\n- Voided\n```'
         };
 
-        const newStatus = statusMap[interaction.customId].label;
+        const newStatus = statusMap[interaction.customId];
 
         const oldEmbed = interaction.message.embeds[0];
 
@@ -41,7 +33,8 @@ module.exports = {
                     ? { name: 'Status', value: newStatus }
                     : f
             ),
-            image: oldEmbed.image
+            // ❌ DO NOT include oldEmbed.image
+            // This prevents the image from reappearing
         };
 
         await interaction.update({

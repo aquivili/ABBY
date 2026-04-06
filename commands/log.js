@@ -11,7 +11,7 @@ const {
 module.exports = {
     data: new SlashCommandBuilder()
         .setName('log')
-        .setDescription('Log or update a ticket order')
+        .setDescription('Create an order log')
         .addStringOption(option =>
             option.setName('name')
                 .setDescription('Order ID')
@@ -40,8 +40,8 @@ module.exports = {
             .setTitle(`Order: ${orderName}`)
             .addFields(
                 { name: 'Shorekeeper', value: interaction.user.username, inline: true },
-                { name: 'Bloombearer', value: bloombearer.username, inline: true },
-                { name: 'Channel', value: `${ticketChannel}`, inline: true },
+                { name: 'Bloombearer', value: bloombearer.toString(), inline: true },
+                { name: 'Channel', value: ticketChannel.toString(), inline: true },
                 { name: 'Status', value: '**__PENDING__**\n```diff\n- Pending\n```' }
             )
             .setImage('attachment://order_status.png');
