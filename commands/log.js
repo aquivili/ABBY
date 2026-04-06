@@ -55,8 +55,7 @@ module.exports = {
                 new ButtonBuilder()
                     .setCustomId('status_pending')
                     .setLabel('Pending')
-                    .setStyle(ButtonStyle.Danger),
-
+                    .setStyle(ButtonStyle.Secondary),   // ⭐ neutral (no red)
                 new ButtonBuilder()
                     .setCustomId('status_processing')
                     .setLabel('Processing')
