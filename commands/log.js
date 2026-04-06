@@ -44,7 +44,8 @@ module.exports = {
                 { name: 'Channel', value: ticketChannel.toString(), inline: true },
                 { name: 'Status', value: '**__PENDING__**\n```diff\n- Pending\n```' }
             )
-            .setImage('attachment://order_status.png');
+            .setImage('attachment://order_status.png')
+            .setFooter({ text: `Logged on ${new Date().toLocaleString()}` });
 
         const row = new ActionRowBuilder()
             .addComponents(

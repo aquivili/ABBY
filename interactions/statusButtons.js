@@ -33,8 +33,8 @@ module.exports = {
                     ? { name: 'Status', value: newStatus }
                     : f
             ),
-            // ❌ DO NOT include oldEmbed.image
-            // This prevents the image from reappearing
+            image: oldEmbed.image,   // ⭐ KEEP IMAGE
+            footer: oldEmbed.footer  // ⭐ KEEP TIMESTAMP
         };
 
         await interaction.update({
