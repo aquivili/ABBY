@@ -12,7 +12,7 @@ module.exports = {
     data: new SlashCommandBuilder()
         .setName('log')
         .setDescription('Create an order log')
-        .setDefaultMemberPermissions(PermissionFlagsBits.Administrator) // ⭐ ADMIN ONLY
+        .setDefaultMemberPermissions(PermissionFlagsBits.Administrator)
         .addStringOption(option =>
             option.setName('name')
                 .setDescription('Order ID')
@@ -34,7 +34,6 @@ module.exports = {
         const bloombearer = interaction.options.getUser('bloombearer');
         const ticketChannel = interaction.options.getChannel('channel');
 
-        // ⭐ MUST BE .dat — NOT PNG
         const banner = new AttachmentBuilder('./assets/order_status.dat', {
             name: 'order_status.png'
         });
@@ -46,9 +45,9 @@ module.exports = {
                 { name: 'Shorekeeper', value: interaction.user.username, inline: true },
                 { name: 'Bloombearer', value: bloombearer.toString(), inline: true },
                 { name: 'Channel', value: ticketChannel.toString(), inline: true },
-                { name: 'Status', value: '**__PENDING__**\n```diff\n- Pending\n```' }
+                { name: 'Status', value: "```fix\nPENDING\n```" }
             )
-            .setImage('attachment://order_status.png') // ⭐ ONLY IMAGE
+            .setImage('attachment://order_status.png')
             .setFooter({ text: `Logged on ${new Date().toLocaleString()}` });
 
         const row = new ActionRowBuilder()
@@ -60,7 +59,7 @@ module.exports = {
 
                 new ButtonBuilder()
                     .setCustomId('status_processing')
-                    .setLabel('Under Processing')
+                    .setLabel('Processing')
                     .setStyle(ButtonStyle.Primary),
 
                 new ButtonBuilder()
@@ -79,8 +78,7 @@ module.exports = {
         await interaction.reply({
             embeds: [embed],
             files: [banner],
-            components: isAdmin ? [row] : [] // ⭐ ONLY ADMINS SEE BUTTONS
+            components: isAdmin ? [row] : []
         });
     }
 };
-
