@@ -33,8 +33,8 @@ module.exports = {
                     ? { name: 'Status', value: newStatus }
                     : f
             ),
-            image: oldEmbed.image,   // ⭐ KEEP IMAGE
-            footer: oldEmbed.footer  // ⭐ KEEP TIMESTAMP
+            image: oldEmbed.image,   // KEEP IMAGE
+            footer: oldEmbed.footer  // KEEP TIMESTAMP
         };
 
         await interaction.update({

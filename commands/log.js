@@ -33,7 +33,10 @@ module.exports = {
         const bloombearer = interaction.options.getUser('bloombearer');
         const ticketChannel = interaction.options.getChannel('channel');
 
-        const banner = new AttachmentBuilder('./assets/order_status.png');
+        // IMPORTANT: using .dat so Discord does NOT auto-embed the file
+        const banner = new AttachmentBuilder('./assets/order_status.dat', {
+            name: 'order_status.png'
+        });
 
         const embed = new EmbedBuilder()
             .setColor(0x1a1a1a)

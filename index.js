@@ -8,12 +8,20 @@ const {
 } = require("discord.js");
 const fs = require("fs");
 const statusButtons = require("./interactions/statusButtons.js");
+
 const client = new Client({
   intents: [
     GatewayIntentBits.Guilds,
     GatewayIntentBits.GuildMessages,
-    GatewayIntentBits.MessageContent
+    GatewayIntentBits.MessageContent,
+    GatewayIntentBits.GuildMembers // ⭐ REQUIRED FOR BLOOMBEARER MENTIONS
   ]
+});
+
+// ⭐ REQUIRED: load ALL members (offline + online)
+client.on("ready", () => {
+  client.guilds.cache.forEach(guild => guild.members.fetch());
+  console.log("Bot is online");
 });
 
 // load slash commands
@@ -37,8 +45,6 @@ for (const file of commandFiles) {
 }
 
 client.on("ready", async () => {
-  console.log("Bot is online");
-
   const rest = new REST({ version: "10" }).setToken(process.env.DISCORD_TOKEN);
 
   await rest.put(
@@ -68,34 +74,36 @@ client.on("interactionCreate", async interaction => {
 // your original messageCreate stays exactly the same
 client.on("messageCreate", async message => {
   if (message.author.bot) return;
-    // CATEGORY: STICKY AUTO-REFRESH
-    const stickyFile = './sticky.json';
 
-    function loadSticky() {
-      if (!fs.existsSync(stickyFile)) return {};
-      return JSON.parse(fs.readFileSync(stickyFile, 'utf8'));
-    }
+  // CATEGORY: STICKY AUTO-REFRESH
+  const stickyFile = './sticky.json';
 
-    const stickies = loadSticky();
-    const channelId = message.channel.id;
+  function loadSticky() {
+    if (!fs.existsSync(stickyFile)) return {};
+    return JSON.parse(fs.readFileSync(stickyFile, 'utf8'));
+  }
 
-    if (stickies[channelId]) {
-      try {
-        message.channel.messages.fetch(stickies[channelId].messageId)
-          .then(m => m.delete())
-          .catch(() => {});
+  const stickies = loadSticky();
+  const channelId = message.channel.id;
 
-        const embed = new EmbedBuilder()
-          .setColor('#ffffff')
-          .setDescription(stickies[channelId].text)
-          .setTimestamp();
+  if (stickies[channelId]) {
+    try {
+      message.channel.messages.fetch(stickies[channelId].messageId)
+        .then(m => m.delete())
+        .catch(() => {});
 
-        message.channel.send({ embeds: [embed] }).then(newMsg => {
-          stickies[channelId].messageId = newMsg.id;
-          fs.writeFileSync(stickyFile, JSON.stringify(stickies, null, 2));
-        });
-      } catch {}
-    }
+      const embed = new EmbedBuilder()
+        .setColor('#ffffff')
+        .setDescription(stickies[channelId].text)
+        .setTimestamp();
+
+      message.channel.send({ embeds: [embed] }).then(newMsg => {
+        stickies[channelId].messageId = newMsg.id;
+        fs.writeFileSync(stickyFile, JSON.stringify(stickies, null, 2));
+      });
+    } catch {}
+  }
+
   const autoThreadChannels = [
     "1475756752136966204",
     "1453055255557439601",
