@@ -4,7 +4,8 @@ const {
     ButtonBuilder,
     ButtonStyle,
     EmbedBuilder,
-    AttachmentBuilder
+    AttachmentBuilder,
+    PermissionFlagsBits
 } = require('discord.js');
 
 module.exports = {
@@ -13,44 +14,67 @@ module.exports = {
         .setDescription('Log or update a ticket order')
         .addStringOption(option =>
             option.setName('name')
-                .setDescription('Order ID or username')
+                .setDescription('Order ID')
+                .setRequired(true)
+        )
+        .addUserOption(option =>
+            option.setName('bloombearer')
+                .setDescription('Member involved in the order')
+                .setRequired(true)
+        )
+        .addChannelOption(option =>
+            option.setName('channel')
+                .setDescription('Ticket channel')
                 .setRequired(true)
         ),
 
     async execute(interaction) {
         const orderName = interaction.options.getString('name');
-        const ticketMaker = interaction.user.username;
-        const ticketChannel = interaction.channel;
+        const bloombearer = interaction.options.getUser('bloombearer');
+        const ticketChannel = interaction.options.getChannel('channel');
 
         const banner = new AttachmentBuilder('./assets/order_status.png');
 
         const embed = new EmbedBuilder()
             .setColor(0x1a1a1a)
             .setTitle(`Order: ${orderName}`)
-            .setDescription(`User: ${ticketMaker}\nChannel: ${ticketChannel}`)
-            .setImage('attachment://order_status.png')
-            .addFields({ name: 'Status', value: 'Pending' });
+            .addFields(
+                { name: 'Shorekeeper', value: interaction.user.username, inline: true },
+                { name: 'Bloombearer', value: bloombearer.username, inline: true },
+                { name: 'Channel', value: `${ticketChannel}`, inline: true },
+                { name: 'Status', value: '**__PENDING__**\n```diff\n- Pending\n```' }
+            )
+            .setImage('attachment://order_status.png');
 
         const row = new ActionRowBuilder()
             .addComponents(
                 new ButtonBuilder()
                     .setCustomId('status_pending')
                     .setLabel('Pending')
-                    .setStyle(ButtonStyle.Secondary),
+                    .setStyle(ButtonStyle.Danger),
+
                 new ButtonBuilder()
                     .setCustomId('status_processing')
                     .setLabel('Under Processing')
                     .setStyle(ButtonStyle.Primary),
+
                 new ButtonBuilder()
                     .setCustomId('status_completed')
                     .setLabel('Completed')
-                    .setStyle(ButtonStyle.Success)
+                    .setStyle(ButtonStyle.Success),
+
+                new ButtonBuilder()
+                    .setCustomId('status_voided')
+                    .setLabel('Voided')
+                    .setStyle(ButtonStyle.Danger)
             );
+
+        const isAdmin = interaction.member.permissions.has(PermissionFlagsBits.Administrator);
 
         await interaction.reply({
             embeds: [embed],
-            components: [row],
-            files: [banner]
+            files: [banner],
+            components: isAdmin ? [row] : []
         });
     }
 };
