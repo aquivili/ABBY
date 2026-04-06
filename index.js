@@ -7,7 +7,7 @@ const {
   Routes
 } = require("discord.js");
 const fs = require("fs");
-
+const statusButtons = require("./interactions/statusButtons.js");
 const client = new Client({
   intents: [
     GatewayIntentBits.Guilds,
@@ -51,12 +51,18 @@ client.on("ready", async () => {
 
 // handle slash commands
 client.on("interactionCreate", async interaction => {
-  if (!interaction.isChatInputCommand()) return;
+  if (interaction.isChatInputCommand()) {
+    const command = client.commands.get(interaction.commandName);
+    if (!command) return;
 
-  const command = client.commands.get(interaction.commandName);
-  if (!command) return;
+    await command.execute(interaction);
+  }
 
-  await command.execute(interaction);
+  if (interaction.isButton()) {
+    if (statusButtons.customIds.includes(interaction.customId)) {
+      return statusButtons.execute(interaction);
+    }
+  }
 });
 
 // your original messageCreate stays exactly the same
