@@ -2,7 +2,7 @@ const { SlashCommandBuilder, EmbedBuilder } = require("discord.js");
 
 module.exports = {
   data: new SlashCommandBuilder()
-    .setName("vouch")
+    .setName("v")
     .setDescription("Submit a vouch with stars, message, and proof")
     .addUserOption(option =>
       option.setName("user")
