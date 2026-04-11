@@ -14,14 +14,8 @@ const client = new Client({
     GatewayIntentBits.Guilds,
     GatewayIntentBits.GuildMessages,
     GatewayIntentBits.MessageContent,
-    GatewayIntentBits.GuildMembers // ⭐ REQUIRED FOR BLOOMBEARER MENTIONS
+    GatewayIntentBits.GuildMembers
   ]
-});
-
-// ⭐ REQUIRED: load ALL members (offline + online)
-client.on("ready", () => {
-  client.guilds.cache.forEach(guild => guild.members.fetch());
-  console.log("Bot is online");
 });
 
 // load slash commands
@@ -31,7 +25,6 @@ const commandFiles = fs.readdirSync("./commands").filter(f => f.endsWith(".js"))
 for (const file of commandFiles) {
   const commandFile = require(`./commands/${file}`);
 
-  // support multiple commands in one file
   if (Array.isArray(commandFile.data)) {
     for (const cmd of commandFile.data) {
       client.commands.set(cmd.name, {
@@ -44,15 +37,28 @@ for (const file of commandFiles) {
   }
 }
 
-client.on("ready", async () => {
+// ⭐ FINAL FIX: SINGLE READY EVENT + GUILD COMMAND REGISTRATION
+client.once("ready", async () => {
+  console.log(`Logged in as ${client.user.tag}`);
+
+  // load all members
+  client.guilds.cache.forEach(guild => guild.members.fetch());
+
   const rest = new REST({ version: "10" }).setToken(process.env.DISCORD_TOKEN);
+  const commands = client.commands.map(cmd => cmd.data.toJSON());
 
-  await rest.put(
-    Routes.applicationCommands(client.user.id),
-    { body: client.commands.map(cmd => cmd.data.toJSON()) }
-  );
-
-  console.log("Slash commands registered");
+  // register commands instantly in every guild
+  for (const guild of client.guilds.cache.values()) {
+    try {
+      await rest.put(
+        Routes.applicationGuildCommands(client.user.id, guild.id),
+        { body: commands }
+      );
+      console.log(`Slash commands registered in guild ${guild.name}`);
+    } catch (err) {
+      console.error(`Failed to register commands in ${guild.id}:`, err);
+    }
+  }
 });
 
 // handle slash commands
@@ -71,11 +77,10 @@ client.on("interactionCreate", async interaction => {
   }
 });
 
-// your original messageCreate stays exactly the same
+// messageCreate stays the same
 client.on("messageCreate", async message => {
   if (message.author.bot) return;
 
-  // CATEGORY: STICKY AUTO-REFRESH
   const stickyFile = './sticky.json';
 
   function loadSticky() {
