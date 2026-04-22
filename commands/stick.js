@@ -1,89 +1,93 @@
-const { SlashCommandBuilder, EmbedBuilder } = require('discord.js');
-const fs = require('fs');
+const { SlashCommandBuilder, EmbedBuilder } = require("discord.js");
+const fs = require("fs");
 
-const stickyFile = './sticky.json';
+const stickyFile = "/app/data/sticky.json";
 
-// load sticky data
 function loadSticky() {
-    if (!fs.existsSync(stickyFile)) return {};
-    return JSON.parse(fs.readFileSync(stickyFile, 'utf8'));
+  if (!fs.existsSync(stickyFile)) return {};
+  return JSON.parse(fs.readFileSync(stickyFile, "utf8"));
 }
 
-// save sticky data
 function saveSticky(data) {
-    fs.writeFileSync(stickyFile, JSON.stringify(data, null, 2));
+  fs.writeFileSync(stickyFile, JSON.stringify(data, null, 2));
 }
 
 module.exports = {
-    data: [
-        new SlashCommandBuilder()
-            .setName('stick')
-            .setDescription('Set a sticky message for this channel')
-            .addStringOption(option =>
-                option.setName('message')
-                    .setDescription('The sticky message')
-                    .setRequired(true)
-            ),
+  data: [
+    new SlashCommandBuilder()
+      .setName("stick")
+      .setDescription("Set a sticky message for this channel")
+      .addStringOption(option =>
+        option
+          .setName("message")
+          .setDescription("The sticky message")
+          .setRequired(true)
+      ),
 
-        new SlashCommandBuilder()
-            .setName('remsticky')
-            .setDescription('Remove the sticky message for this channel')
-    ],
+    new SlashCommandBuilder()
+      .setName("remsticky")
+      .setDescription("Remove the sticky message for this channel")
+  ],
 
-    async execute(interaction) {
-        const channel = interaction.channel;
-        const channelId = channel.id;
-        const stickies = loadSticky();
+  async execute(interaction) {
+    const channel = interaction.channel;
+    const channelId = channel.id;
+    const stickies = loadSticky();
 
-        if (interaction.commandName === 'stick') {
-            const content = interaction.options.getString('message');
+    if (interaction.commandName === "stick") {
+      const content = interaction.options.getString("message");
 
-            // delete old sticky if exists
-            if (stickies[channelId] && stickies[channelId].messageId) {
-                try {
-                    const oldMsg = await channel.messages.fetch(stickies[channelId].messageId);
-                    await oldMsg.delete();
-                } catch {}
-            }
+      if (stickies[channelId] && stickies[channelId].messageId) {
+        try {
+          const oldMsg = await channel.messages
+            .fetch(stickies[channelId].messageId)
+            .catch(() => null);
 
-            // create new sticky embed
-            const embed = new EmbedBuilder()
-                .setColor('#ffffff')
-                .setAuthor({
-                    name: interaction.user.username,
-                    iconURL: interaction.user.displayAvatarURL()
-                })
-                .setDescription(content)
-                .setTimestamp();
+          if (oldMsg) await oldMsg.delete();
+        } catch {}
+      }
 
-            const msg = await channel.send({ embeds: [embed] });
+      const embed = new EmbedBuilder()
+        .setColor("#ffffff")
+        .setAuthor({
+          name: interaction.user.username,
+          iconURL: interaction.user.displayAvatarURL()
+        })
+        .setDescription(content)
+        .setTimestamp();
 
-            // save sticky
-            stickies[channelId] = {
-                text: content,
-                messageId: msg.id
-            };
+      const msg = await channel.send({ embeds: [embed] });
 
-            saveSticky(stickies);
+      stickies[channelId] = {
+        text: content,
+        messageId: msg.id
+      };
 
-            await interaction.reply({ content: 'Sticky set', ephemeral: true });
-        }
+      saveSticky(stickies);
 
-        if (interaction.commandName === 'remsticky') {
-            if (!stickies[channelId]) {
-                return interaction.reply({ content: 'No sticky in this channel', ephemeral: true });
-            }
-
-            // delete sticky message
-            try {
-                const oldMsg = await channel.messages.fetch(stickies[channelId].messageId);
-                await oldMsg.delete();
-            } catch {}
-
-            delete stickies[channelId];
-            saveSticky(stickies);
-
-            await interaction.reply({ content: 'Sticky removed', ephemeral: true });
-        }
+      await interaction.reply({ content: "Sticky set", ephemeral: true });
     }
+
+    if (interaction.commandName === "remsticky") {
+      if (!stickies[channelId]) {
+        return interaction.reply({
+          content: "No sticky in this channel",
+          ephemeral: true
+        });
+      }
+
+      try {
+        const oldMsg = await channel.messages
+          .fetch(stickies[channelId].messageId)
+          .catch(() => null);
+
+        if (oldMsg) await oldMsg.delete();
+      } catch {}
+
+      delete stickies[channelId];
+      saveSticky(stickies);
+
+      await interaction.reply({ content: "Sticky removed", ephemeral: true });
+    }
+  }
 };
