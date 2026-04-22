@@ -9,6 +9,17 @@ const {
 const fs = require("fs");
 const statusButtons = require("./interactions/statusButtons.js");
 
+const stickyFile = "/app/data/sticky.json";
+
+function loadSticky() {
+  if (!fs.existsSync(stickyFile)) return {};
+  return JSON.parse(fs.readFileSync(stickyFile, "utf8"));
+}
+
+function saveSticky(data) {
+  fs.writeFileSync(stickyFile, JSON.stringify(data, null, 2));
+}
+
 const client = new Client({
   intents: [
     GatewayIntentBits.Guilds,
@@ -18,7 +29,6 @@ const client = new Client({
   ]
 });
 
-// load slash commands
 client.commands = new Collection();
 const commandFiles = fs.readdirSync("./commands").filter(f => f.endsWith(".js"));
 
@@ -37,17 +47,14 @@ for (const file of commandFiles) {
   }
 }
 
-// ⭐ FINAL FIX: SINGLE READY EVENT + GUILD COMMAND REGISTRATION
 client.once("ready", async () => {
   console.log(`Logged in as ${client.user.tag}`);
 
-  // load all members
   client.guilds.cache.forEach(guild => guild.members.fetch());
 
   const rest = new REST({ version: "10" }).setToken(process.env.DISCORD_TOKEN);
   const commands = client.commands.map(cmd => cmd.data.toJSON());
 
-  // register commands instantly in every guild
   for (const guild of client.guilds.cache.values()) {
     try {
       await rest.put(
@@ -61,12 +68,10 @@ client.once("ready", async () => {
   }
 });
 
-// handle slash commands
 client.on("interactionCreate", async interaction => {
   if (interaction.isChatInputCommand()) {
     const command = client.commands.get(interaction.commandName);
     if (!command) return;
-
     await command.execute(interaction);
   }
 
@@ -77,36 +82,32 @@ client.on("interactionCreate", async interaction => {
   }
 });
 
-// messageCreate stays the same
 client.on("messageCreate", async message => {
   if (message.author.bot) return;
-
- const stickyFile = '/app/data/sticky.json';
-
-  function loadSticky() {
-    if (!fs.existsSync(stickyFile)) return {};
-    return JSON.parse(fs.readFileSync(stickyFile, 'utf8'));
-  }
 
   const stickies = loadSticky();
   const channelId = message.channel.id;
 
   if (stickies[channelId]) {
     try {
-      message.channel.messages.fetch(stickies[channelId].messageId)
-        .then(m => m.delete())
-        .catch(() => {});
+      const oldMsg = await message.channel.messages
+        .fetch(stickies[channelId].messageId)
+        .catch(() => null);
+
+      if (oldMsg) await oldMsg.delete();
 
       const embed = new EmbedBuilder()
-        .setColor('#ffffff')
+        .setColor("#ffffff")
         .setDescription(stickies[channelId].text)
         .setTimestamp();
 
-      message.channel.send({ embeds: [embed] }).then(newMsg => {
-        stickies[channelId].messageId = newMsg.id;
-        fs.writeFileSync(stickyFile, JSON.stringify(stickies, null, 2));
-      });
-    } catch {}
+      const newMsg = await message.channel.send({ embeds: [embed] });
+
+      stickies[channelId].messageId = newMsg.id;
+      saveSticky(stickies);
+    } catch (err) {
+      console.error("Sticky refresh failed:", err);
+    }
   }
 
   const autoThreadChannels = [
@@ -164,8 +165,8 @@ client.on("messageCreate", async message => {
       "sorry may asawa na ako may anak na kame",
       "hawak mo ang beat hawak mo ang beat hawak mo ang beat hawak mo ang beat dubai chewy cookie ano tara ilocos empanada ano tara scramble ng tomboy isang araw nagmamaneho ako sa laguna pipipeeppeep dubidubidapdap maglaro tayo maglarue gagayahin mo ako tentenentenentententen",
       "ilocos empanada, dubai chewy cookies, dokito burger, i miss my baby",
-      "goodness gracious! ikaw 'yung nag shoplift~ you're the one caught stealing on cctv  oh my god, no way! cannot take this anymore, no way!! my twin brother is a criminal. 'yan ang 'di ko matatanggap at tawagin mo 'kong— criminal? BROTHER!",
-      "oh tapos ano tapos magiging friends tayo tapos magkakagusto ka saken tapos magugustuhan din kita tapos hindi tayo aamin sa isa't isa Kahit tinutukso na tayo ng friends natin tapos magiinuman kayo ng friends mo tapos magda drunk chat ka sasabihin mo gusto mo ako at mahal mo na tapos sasabihin ko mahal na rin kita tapos magiging tayo tapos kalaunan magkakatampuhan tayo tapos susuyuin kita then at some point susuyuin mo ko tapos mapapagod ka tapos iiwan mo ko tapos hahabulin kita tapos babalik ka ulit tapos mag aaway ulit tapos pag nabuntis ako aalis ka tapos pag malaki na ang anak natin sasabihin mo pasensya na at hindi ka lang handa sa responsibilidad, wag na lang."
+      "goodness gracious ikaw yung nag shoplift youre the one caught stealing on cctv oh my god no way cannot take this anymore no way my twin brother is a criminal yan ang di ko matatanggap at tawagin mo kong criminal BROTHER",
+      "oh tapos ano tapos magiging friends tayo tapos magkakagusto ka saken tapos magugustuhan din kita tapos hindi tayo aamin sa isa't isa kahit tinutukso na tayo ng friends natin tapos magiinuman kayo ng friends mo tapos magda drunk chat ka sasabihin mo gusto mo ako at mahal mo na tapos sasabihin ko mahal na rin kita tapos magiging tayo tapos kalaunan magkakatampuhan tayo tapos susuyuin kita then at some point susuyuin mo ko tapos mapapagod ka tapos iiwan mo ko tapos hahabulin kita tapos babalik ka ulit tapos mag aaway ulit tapos pag nabuntis ako aalis ka tapos pag malaki na ang anak natin sasabihin mo pasensya na at hindi ka lang handa sa responsibilidad wag na lang"
     ];
 
     const pick = replies[Math.floor(Math.random() * replies.length)];
