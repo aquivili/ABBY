@@ -81,7 +81,7 @@ client.on("interactionCreate", async interaction => {
 client.on("messageCreate", async message => {
   if (message.author.bot) return;
 
-  const stickyFile = './sticky.json';
+ const stickyFile = '/app/data/sticky.json';
 
   function loadSticky() {
     if (!fs.existsSync(stickyFile)) return {};
