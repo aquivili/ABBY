@@ -6,6 +6,9 @@ const {
   REST,
   Routes
 } = require("discord.js");
+
+const { joinVoiceChannel } = require("@discordjs/voice"); // ⭐ REQUIRED FOR VC
+
 const fs = require("fs");
 const statusButtons = require("./interactions/statusButtons.js");
 
@@ -25,7 +28,8 @@ const client = new Client({
     GatewayIntentBits.Guilds,
     GatewayIntentBits.GuildMessages,
     GatewayIntentBits.MessageContent,
-    GatewayIntentBits.GuildMembers
+    GatewayIntentBits.GuildMembers,
+    GatewayIntentBits.GuildVoiceStates // ⭐ YOU WERE MISSING THIS
   ]
 });
 
@@ -85,6 +89,31 @@ client.on("interactionCreate", async interaction => {
 client.on("messageCreate", async message => {
   if (message.author.bot) return;
 
+  // ⭐ a!stay — join VC
+  if (message.content === "a!stay") {
+    if (!message.member.voice.channel) {
+      return message.reply("Join a voice channel first.");
+    }
+
+    joinVoiceChannel({
+      channelId: message.member.voice.channel.id,
+      guildId: message.guild.id,
+      adapterCreator: message.guild.voiceAdapterCreator
+    });
+
+    return message.reply("I'm now staying in VC.");
+  }
+
+  // ⭐ a!leave — leave VC
+  if (message.content === "a!leave") {
+    const connection = message.guild.members.me.voice.connection;
+    if (!connection) return message.reply("I'm not in a voice channel.");
+
+    connection.destroy();
+    return message.reply("I left the voice channel.");
+  }
+
+  // ⭐ Sticky system
   const stickies = loadSticky();
   const channelId = message.channel.id;
 
