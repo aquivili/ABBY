@@ -193,6 +193,7 @@ client.on("messageCreate", async message => {
   ) {
     const replies = [
       "may gf na ako",
+      "six seveeeeeeen",
       "friends lang talaga",
       "sorry may mahal na akong iba",
       "palibhasa kasi alam mo kung pano ako kunin eh",
