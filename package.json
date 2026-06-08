@@ -6,9 +6,10 @@
     "start": "node index.js"
   },
   "dependencies": {
+    "@discordjs/voice": "^0.19.2",
     "@napi-rs/canvas": "^0.1.96",
     "canvas": "^3.2.1",
- "discord.js": "^14.14.1",
+    "discord.js": "^14.14.1",
     "dotenv": "^17.3.1",
     "jimp": "^0.22.12"
   },
