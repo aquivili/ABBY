@@ -7,7 +7,10 @@ const {
   Routes
 } = require("discord.js");
 
-const { joinVoiceChannel } = require("@discordjs/voice"); // ⭐ REQUIRED FOR VC
+const { 
+  joinVoiceChannel,
+  getVoiceConnection
+} = require("@discordjs/voice");
 
 const fs = require("fs");
 const statusButtons = require("./interactions/statusButtons.js");
@@ -29,7 +32,7 @@ const client = new Client({
     GatewayIntentBits.GuildMessages,
     GatewayIntentBits.MessageContent,
     GatewayIntentBits.GuildMembers,
-    GatewayIntentBits.GuildVoiceStates // ⭐ YOU WERE MISSING THIS
+    GatewayIntentBits.GuildVoiceStates
   ]
 });
 
@@ -98,15 +101,17 @@ client.on("messageCreate", async message => {
     joinVoiceChannel({
       channelId: message.member.voice.channel.id,
       guildId: message.guild.id,
-      adapterCreator: message.guild.voiceAdapterCreator
+      adapterCreator: message.guild.voiceAdapterCreator,
+      selfDeaf: false,
+      selfMute: false
     });
 
     return message.reply("I'm now staying in VC.");
   }
 
-  // ⭐ a!leave — leave VC
+  // ⭐ a!leave — FIXED VERSION
   if (message.content === "a!leave") {
-    const connection = message.guild.members.me.voice.connection;
+    const connection = getVoiceConnection(message.guild.id);
     if (!connection) return message.reply("I'm not in a voice channel.");
 
     connection.destroy();
